@@ -18,7 +18,6 @@ import Setting from '@views/user/Setting';
 import Notifications from '@views/user/Notifications';
 import Config from '@views/user/Config';
 
-// Auth views imports
 import Login from '@views/auth/Login';
 import Signup from '@views/auth/Signup';
 import SignupSuccess from '@views/auth/SignupSuccess';
@@ -30,7 +29,6 @@ import ResetL from '@views/auth/ResetL';
 import ResetPhone from '@views/auth/ResetPhone';
 import ResetEmail from '@views/auth/ResetEmail';
 
-// Other views imports
 import Splash from '@views/start/Splash';
 import Info from '@views/Info';
 import SSuccess from '@views/SSuccess';
@@ -138,6 +136,7 @@ const DrawerNavigation = () => {
                     />
                 )}
 
+
                 {user.email === null && (
                     <RNDrawer.Screen
                         name="Login"
@@ -145,6 +144,8 @@ const DrawerNavigation = () => {
                         options={{ headerShown: false }}
                     />
                 )}
+
+
 
                 <RNDrawer.Screen name="Principal" component={Home} />
                 <RNDrawer.Screen name="Perfil" component={Account} />
@@ -164,11 +165,7 @@ const DrawerNavigation = () => {
                     component={Logout}
                     options={{ headerShown: false }}
                 />
-                <RNDrawer.Screen
-                    name="VerificationCode"
-                    component={VerificationCode}
-                    options={{ headerShown: false }}
-                />
+
                 <RNDrawer.Screen
                     name="Profile"
                     component={Profile}
@@ -234,6 +231,7 @@ const DrawerNavigation = () => {
                     component={Signup}
                     options={{ headerShown: false }}
                 />
+
                 <RNDrawer.Screen
                     name="LSuccess"
                     component={LSuccess}

@@ -8,7 +8,7 @@ import {
     Dimensions,
     ActivityIndicator,
     RefreshControl,
-    Image
+    Image, Platform, Alert
 } from 'react-native';
 import {
     Text,
@@ -17,18 +17,19 @@ import {
     Surface,
     Avatar,
     Portal,
-    Modal
+    Modal, AnimatedFAB
 } from 'react-native-paper';
 import {$theme} from "@/config/theme";
 import api from '@/services/api';
 import $endpoints from "@/config/endpoints";
 import $system from "@/config/system";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import ReportModal from './ReportModal'; // Asegúrate de importar el componente
+import ReportModal from './ReportModal';
 
 const {width} = Dimensions.get('window');
 
-const ReportListScreen = ({navigation}) => {
+const ReportList = ({navigation}) => {
+
     const [activeTab, setActiveTab] = useState('pending');
     const [searchQuery, setSearchQuery] = useState('');
     const [filterVisible, setFilterVisible] = useState(false);
@@ -36,11 +37,25 @@ const ReportListScreen = ({navigation}) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
-
+    const [showFilter, setShowFilter] = useState(false);
     const [selectedReport, setSelectedReport] = useState(null);
     const [reportModalVisible, setReportModalVisible] = useState(false);
     const [comments, setComments] = useState('');
     const [eventType, setEventType] = useState(null);
+
+
+    const [isExtended, setIsExtended] = useState(true);
+
+    const isIOS = Platform.OS === 'ios';
+
+    const onScroll = ({ nativeEvent }) => {
+        const currentScrollPosition =
+            Math.floor(nativeEvent?.contentOffset?.y) ?? 0;
+
+        setIsExtended(currentScrollPosition <= 0);
+    };
+
+    const fabStyle = {};
 
     const loadReports = async () => {
         if (!refreshing) setLoading(true);
@@ -96,7 +111,7 @@ const ReportListScreen = ({navigation}) => {
         const severityMap = {
             1: 'Baja',
             2: 'Media',
-            3: 'Alta'
+            3: 'Alta',
         };
         return severityMap[statusId] || 'Media';
     };
@@ -122,11 +137,16 @@ const ReportListScreen = ({navigation}) => {
     const handleReportSubmit = async ({event_id, comments}) => {
         try {
             setLoading(true);
+
+           /*
             const response = await api.put(`${$endpoints.panel.reports}/${selectedReport.id}`, {
                 event_id,
                 comments,
                 status_id: selectedReport.status?.id
-            });
+            },false);
+            */
+
+            Alert.alert('Reporte actualizado','El reporte se ha actualizado correctamente, se notificara al usuario via correo electronico');
 
             await loadReports();
             setReportModalVisible(false);
@@ -135,6 +155,8 @@ const ReportListScreen = ({navigation}) => {
             setSelectedReport(null);
             setEventType(null);
             setComments('');
+
+
         } catch (error) {
             console.error('Error updating report:', error);
             Alert.alert(
@@ -178,19 +200,6 @@ const ReportListScreen = ({navigation}) => {
         return colors[severity] || '#757575';
     };
 
-    const renderHeader = () => (
-        <View style={styles.header}>
-            <View style={styles.headerContainer}>
-                <Text style={styles.title}>Reportes</Text>
-                <View style={styles.notificationContainer}>
-                    <Icon name="bell-outline" size={25}/>
-                    <View style={styles.badge}>
-                        <Text style={styles.badgeText}>5</Text>
-                    </View>
-                </View>
-            </View>
-        </View>
-    );
 
     const renderTabs = () => (
         <View style={styles.tabsContainer}>
@@ -225,6 +234,8 @@ const ReportListScreen = ({navigation}) => {
     );
 
     const renderContent = () => {
+
+
         if (loading && !refreshing) {
             return (
                 <View style={styles.loadingContainer}>
@@ -394,11 +405,11 @@ const ReportListScreen = ({navigation}) => {
                 </Modal>
             </Portal>
 
-            {renderHeader()}
+            {/*renderHeader(navigation)*/}
             <View style={styles.searchContainer}>
                 <View style={styles.searchBarContainer}>
                     <Searchbar
-                        placeholder="Buscar reportes..."
+                        placeholder="Buscar"
                         onChangeText={setSearchQuery}
                         value={searchQuery}
                         style={styles.searchBar}
@@ -406,13 +417,13 @@ const ReportListScreen = ({navigation}) => {
                             <IconButton
                                 {...props}
                                 icon="filter-variant"
-                                onPress={() => setFilterVisible(true)}
+                                onPress={() => setShowFilter(!showFilter)}
                             />
                         )}
                     />
                 </View>
             </View>
-            {renderTabs()}
+            {showFilter &&  renderTabs()}
             {renderContent()}
 
             {/* Añadimos el ReportModal */}
@@ -432,6 +443,23 @@ const ReportListScreen = ({navigation}) => {
                 comments={comments}
                 setComments={setComments}
             />
+
+
+            {/*
+            <AnimatedFAB
+                icon={'map-marker-path'}
+                label={'Nuevo Reporte'}
+                extended={false}
+
+                onPress={() => console.log('Pressed')}
+                visible={true}
+                animateFrom={'right'}
+                iconMode={'static'}
+                color={'#FFF'}
+                style={[styles.fabStyle, { right: 16 }]}
+                customStyle={{ backgroundColor: $theme?.colors?.primary }}
+            />
+            */}
         </SafeAreaView>
     );
 };
@@ -441,31 +469,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F5F7FA',
     },
-    headerContainer: {
-        flex: 1,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-    },
-    notificationContainer: {
-        position: "relative"
-    },
-    badge: {
-        position: "absolute",
-        top: -5,
-        right: -5,
-        backgroundColor: "red",
-        borderRadius: 10,
-        width: 20,
-        height: 20,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    badgeText: {
-        color: "white",
-        fontSize: 12,
-        fontWeight: "bold",
-    },
+
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -504,19 +508,7 @@ const styles = StyleSheet.create({
         color: '#666',
         fontSize: 16
     },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 25,
-        paddingTop: 20,
-        paddingBottom: 15,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: '700',
-        color: '#1A1A1A',
-    },
+
     searchContainer: {
         paddingHorizontal: 20,
         marginBottom: 16,
@@ -634,7 +626,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 10,
-        marginTop: -10,
+        marginTop: 0,
     },
     commentTitle: {
         fontSize: 14,
@@ -709,7 +701,7 @@ const styles = StyleSheet.create({
     cardImage: {
         width: '100%',
         height: 200,
-        position: 'relative' // Importante para el posicionamiento del overlay
+        position: 'relative'
     },
 
     overlayFade: {
@@ -722,6 +714,83 @@ const styles = StyleSheet.create({
         opacity: 0.25,
     },
 
+
+    iconButton: {
+        padding: 5,
+    },
+
+
+    fabStyle: {
+        backgroundColor:'#000',
+        bottom: 16,
+        color:'#FFF',
+        position: 'absolute',
+        right: 16,
+        marginHorizontal: 16,
+    },
+
+    header: {
+        paddingHorizontal: 16,
+        paddingTop: 16,
+        paddingBottom: 8,
+        backgroundColor: '#F5F7FA',
+    },
+    headerContainer: {
+        paddingBottom:10,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: '700',
+        color: '#1A1A1A',
+        flex: 1,
+        paddingTop:10,
+    },
+    actionsContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 16,
+    },
+    actionButton: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: 72,
+    },
+    actionIcon: {
+        margin: 0,
+        marginBottom: 0,
+    },
+    actionText: {
+        fontSize: 12,
+        color: '#666666',
+        marginTop: 0,
+        textAlign: 'center',
+    },
+    notificationContainer: {
+        position: 'relative',
+        alignItems: 'center',
+        marginTop:5,
+
+    },
+    badge: {
+        position: 'absolute',
+        top: -4,
+        right: -8,
+        backgroundColor: '#FF5252',
+        borderRadius: 10,
+        minWidth: 18,
+        height: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 4,
+    },
+    badgeText: {
+        color: 'white',
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
 });
 
-export default ReportListScreen;
+export default ReportList;

@@ -1,9 +1,0 @@
-<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96">
-	<title>dashboard</title>
-	<defs>
-		<image  width="90" height="78" id="img1" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFoAAABOCAYAAACg7wGPAAAAAXNSR0IB2cksfwAAA2dJREFUeJztnb9PE2EYx5+3jfJLg4vG0cHRv8CYOCCJg046QCcjBDc3FxIihoTB0U1E41RI1InEmIBGE/UvcDTRwcHoIoHSFnr3+lx7d22vLcXryxcw3w+8PPe+9/bb9z53XNqlNdKBm3enjZZM2EybeljGGscPYiwTKtvWtqWtqK0Qbn97+Wj+h4QTKRohWoWudJIdYjrU3fbtNsflfJeZafOj6mvzEi2QXapOUtFWyL5D0SBSiDZiOt7Zd39ccnPvMW1mds3okt4xco+rSk6zUbFS+9Uf3xdrazs6ijahzWrVZqTej/bVxhO1YW7cN+HKqr/1fi2ncX9t20jDeNRveF7TZm7Ub5ofH0f43PHaon59bnxs4b7omOt9aTq2+tprfc/3xKtUpFLZ0bqjtSKbG+uyVdhoL7qvf0AuXr6qdbD13MYH2nBaWy7U5KUWnYREVJt5LTnJ7DZB8UlPppvmfnNkp/+u1idsjTHJQ6l6Ca7c4AouFbfk0/vXUiwWQumV2pSk6MGhk3Ijd6dayb8TXMGv8o/jKzmCoh1D0SAoGgRFg6BoEBQNgqJBUDQIigZB0SAoGgRFg6BoEBQNgqJBUDQIigZB0SAoGgRFg6BoEBQNgqJBUDQIigZB0SAoGgRFg6BoEBQNgqJBUDQIigZB0SAoGgRFg6BoEBQNgqJBUDQIigZB0SAoGgRFg6BoEHsWHX+MRN8AdIH/C+VyUT5/eCPlUrFpnB/1A4KiQVA0CIoGQdEgKBoERYMIRF876EUkKRU2c57njad5bDabXeofOpF3vaZeSfWZjPvNaG5yVsv9lA+fXc0vPnC3GjdQNAiKBkHRICgaBEWDcCZ6dGzqmBg7LMY/py/Mh42YPh3OpowbD1salsKWBs+KLauUdbGZ72LN+urywk7KrCaciB4Zu53JSPaspl1S0bdU9AUVfVp39bvIB1JS0b9VyhcV/VysfPTF+/l2+Znfa7Ar0WeMMddV7pwmntKh41L/VoejRPAuOZC6rVt/VPqMtXZFRf/qNdiJiNHcxIiWqeCNptS/LuOo41srL7QurC0tvus1zInoK7mJKQ26p3HnXeQdFvTy/qp/H67lnz7pNcuV6Gm9bczI0bsndyO4Z8+p6PlegxzdOiZnJf3LscOOk5eLFN0digbhRPRfI4gBjOGw+ZkAAAAASUVORK5CYII="/>
-	</defs>
-	<style>
-	</style>
-	<use id="Layer 4" href="#img1" x="4" y="9"/>
-</svg>

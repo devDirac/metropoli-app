@@ -7,7 +7,7 @@ export const colors = {
         10: '#00105C',
         20: '#001D85',
         30: '#002DB0',
-        40: '#1B3B89', // Ajustado al azul de la imagen
+        40: '#1B3B89',
         50: '#1855FF',
         60: '#4570FF',
         70: '#658AFF',

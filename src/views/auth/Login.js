@@ -1,17 +1,25 @@
 import React, {useState} from 'react';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, TouchableOpacity} from 'react-native';
 import {TextInput, Text, Button, Image} from '@components/elements';
 import {useTheme} from 'react-native-paper';
 import {useNavigation} from '@react-navigation/native';
 import $endpoints from '@config/endpoints'
+import httpClient from '@/services/api';
+
+import { setCredentials, setLoading as setAuthLoading } from "@/store/slice/authSlice";
+import {useDispatch} from 'react-redux';
+import {setSessionUser} from "@/store/slice/userSlice";
+
+
 const LoginScreen = () => {
     const navigation = useNavigation();
     const theme = useTheme();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('admin@dirac.mx');
+    const [password, setPassword] = useState('password');
     const [secureTextEntry, setSecureTextEntry] = useState(true);
-    const [formAuth, setFormAuth] = useState({email:null,password:null});
+    const [formAuth, setFormAuth] = useState({email: null, password: null});
     const [loading, setLoading] = useState(false);
+    const dispatch = useDispatch();
 
     const handleChangeForm = (name, value) => {
         setFormAuth(prevState => ({
@@ -22,49 +30,38 @@ const LoginScreen = () => {
 
 
 
- const onSubmit = ()=> {
+    const onSubmit = async () => {
         try {
             setLoading(true);
-            api.postAwaiting($endpoints.auth.login, formAuth, true).then(response => {
-                if (response.access_token !== undefined && response.access_token !== '') {
-                    Toast.show({
-                        type: 'success',
-                        position: 'top',
-                        text1: '¡Acceso correcto!',
-                        text2: 'Accediendo',
-                        visibilityTime: 2500,
-                        onHide: () => {
+            dispatch(setAuthLoading(true));
 
-                            console.log(response);
-                            dispatch(setSessionAuth({token: response.access_token, lang: 'es'}));
-                            dispatch(setSessionUser({
-                                id: response.user.id,
-                                name: response.user.name,
-                                email: response.user.email,
-                                admin: response.user.admin,
+            const response = await httpClient.post($endpoints.auth.login, formAuth, 'error');
 
-                            }));
+            if (response.data.token) {
+                dispatch(setCredentials({
+                    token: response.data.token,
+                    permissions: response.data.permissions || [],
+                    roles: response.data.roles || [],
+                }));
 
-                            setLoading(false);
+                dispatch(setSessionUser({
+                    id: response.data.user.id,
+                    name: response.data.user.name,
+                    email: response.data.user.email,
+                    role:  response.data.roles || [],
 
-                            navigation.reset({
-                                index: 0,
-                                routes: [{name: 'Principal'}],
-                            });
-                        }
-                        // });
-                    });
-                }
-            }).catch(error => {
-                console.log(error);
-                setLoading(false);
-            })
-        } catch (e) {
-            console.log(e);
+                }));
+
+            }
+        } catch (error) {
+            setLoading(false)
+            dispatch(setAuthLoading(false));
+
+        } finally {
             setLoading(false);
+            dispatch(setAuthLoading(false));
         }
-
-    }
+    };
 
     const styles = StyleSheet.create({
         container: {
@@ -140,7 +137,7 @@ const LoginScreen = () => {
             textAlign: 'left',
         },
         googleButton: {
-            borderWidth:1,
+            borderWidth: 1,
             borderColor: '#bababa',
             backgroundColor: '#FFFFFF',
 
@@ -186,13 +183,13 @@ const LoginScreen = () => {
                 <View style={styles.form}>
                     <View style={styles.inputContainer}>
                         <Text style={{fontWeight: 'bold', color: theme.colors.primary}}>
-                            Correo electrónico
+                            Correo electrónico / Telefono
                         </Text>
                         <TextInput
                             mode="flat"
-                            value={email}
-                            onChangeText={(value) => handleChangeForm('email', value)}
-                            placeholder="example@email.com"
+
+                            onChangeText={(value) => handleChangeForm('email_phone', value)}
+                            placeholder="Ingresa tu correo o número telefonico"
                             keyboardType="email-address"
                             autoCapitalize="none"
                             underlineColor={theme.colors.outline}
@@ -206,21 +203,17 @@ const LoginScreen = () => {
                             <Text style={{fontWeight: 'bold', color: theme.colors.primary}}>
                                 Contraseña
                             </Text>
-                            <Text
-                                variant="bodyLarge"
-                                onPress={() => {
-                                }}
-                                style={{color: theme.colors.onSurfaceVariant, fontSize: '12px'}}
-                            >
-                                Olvidaste tu contraseña?
-                            </Text>
+                            <TouchableOpacity onPress={() => navigation.navigate('Reset')}>
+                                <Text variant="bodyLarge"
+                                      style={{color: theme.colors.onSurfaceVariant, fontSize: '12px'}}>
+                                    Olvidaste tu contraseña?
+                                </Text>
+                            </TouchableOpacity>
                         </View>
                         <TextInput
                             mode="flat"
-                            value={password}
                             placeholder="*************"
                             onChangeText={(value) => handleChangeForm('password', value)}
-
                             secureTextEntry={secureTextEntry}
                             underlineColor={theme.colors.outline}
                             activeUnderlineColor={theme.colors.primary}
@@ -239,6 +232,7 @@ const LoginScreen = () => {
                         onPress={() => {
                             onSubmit();
                         }}
+                        loading={loading}
                         style={styles.loginButton}
                     >
                         Iniciar sesión
@@ -251,14 +245,13 @@ const LoginScreen = () => {
                         >
                             ¿No tienes cuenta?
                         </Text>
-                        <Text
-                            variant="bodyLarge"
-                            onPress={() => {
-                            }}
-                            style={{color: theme.colors.primary, fontWeight: 'bold'}}
-                        >
-                            Regístrate
-                        </Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+
+                            <Text variant="bodyLarge" style={{color: theme.colors.primary, fontWeight: 'bold'}}
+                            >
+                                Regístrate
+                            </Text>
+                        </TouchableOpacity>
                     </View>
 
                     <View style={styles.divider}>
@@ -311,7 +304,7 @@ const LoginScreen = () => {
                             </View>
                         </Button>
 
-                        {/* X Button */}
+
                         <Button
                             mode="contained"
                             onPress={() => {
@@ -330,7 +323,6 @@ const LoginScreen = () => {
                             </View>
                         </Button>
 
-                        {/* Facebook Button */}
                         <Button
                             mode="contained"
                             onPress={() => {

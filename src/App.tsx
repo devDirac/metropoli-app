@@ -7,8 +7,13 @@ import {Provider as PaperProvider} from 'react-native-paper';
 import DrawerNavigation from '@/navigator/DrawerNavigator';
 import {NavigationContainer} from '@react-navigation/native';
 import {$theme} from '@/config/theme';
+
+
+
+
 const App = () => {
     return (
+
         <SafeAreaProvider>
             <PaperProvider theme={$theme} >
                 <Provider store={store}>

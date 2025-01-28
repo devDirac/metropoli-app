@@ -62,16 +62,14 @@ export default function Start() {
             api.postAwaiting('auth/login', formAuth).then(response => {
 
                 if (response.data.token !== undefined && response.data.token !== '') {
-                    // setToken Authentication
 
 
 
                     OneSignal.login(response.data.auth.code);
 
-                    // Get permission user
                     //    api.postAwaiting('auth/permissions', {}).then(response => {
                     Toast.show({
-                        type: 'success', // 'success', 'error', 'info', 'warning'
+                        type: 'success',
                         position: 'top',
                         text1: '¡Acceso correcto!',
                         text2: 'Accediendo',

@@ -1,4 +1,3 @@
-// features/user/userSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -30,7 +29,7 @@ export const userSlice = createSlice({
         email: null,
         company: null,
         image_profile: null,
-        admin: 0,
+        role: 'user',
     },
     reducers: {
         setSessionUser: (state, action) => {
@@ -39,7 +38,7 @@ export const userSlice = createSlice({
             state.email = action.payload.email;
             state.company = action.payload.company;
             state.image_profile = action.payload.image_profile;
-            state.admin = action.payload.admin;
+            state.role = action.payload.role;
 
             saveSessionUser(action.payload);
         },
@@ -49,7 +48,7 @@ export const userSlice = createSlice({
             state.email = null;
             state.company = null;
             state.image_profile = null;
-            state.admin = null;
+            state.role = null;
             saveSessionUser(null);
         },
     },

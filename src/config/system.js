@@ -1,5 +1,5 @@
 export default {
     name: 'Reporte Ciudadano',
-    url: 'https://reporte-ciudadano.io',
+    url: 'https://metropoli.qubi.com.mx/',
     language: 'es',
 };

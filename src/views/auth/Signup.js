@@ -1,102 +1,28 @@
-import {
-    View,
-    Text,
-    SafeAreaView,
-    TextInput,
-    Dimensions,
-    StatusBar,
-    ActivityIndicator,
-    TouchableOpacity,
-    Image,
-    ScrollView,
-    KeyboardAvoidingView
-} from 'react-native'
-import React, {useState, useContext, useEffect} from 'react'
-
+import React, {useState} from 'react';
+import {View, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, Alert} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import {AppBar} from '@react-native-material/core';
-import Icon from 'react-native-vector-icons/Ionicons';
-import Icons from 'react-native-vector-icons/Feather'
-import {Input, Select} from "@components/elements";
-import api from "@/services/api";
+import httpClient from '@/services/api';
 import $endpoints from '@config/endpoints';
-
-import Toast from "react-native-toast-message";
-
-const width = Dimensions.get('screen').width
-const height = Dimensions.get('screen').height
-
-export default function Signup() {
-
-    const [isPasswordVisible, setIsPasswordVisible] = useState(false)
-    const theme = useContext(themeContext);
+import {TextInput, Text, Button, Image} from '@components/elements';
+import {useTheme, SegmentedButtons} from 'react-native-paper';
+const Signup = ({route}) => {
     const navigation = useNavigation();
-    const [isFocused, setIsFocused] = useState(false)
+    const theme = useTheme();
+    const params = route.params;
+    const [value, setValue] = useState('email');
+    const [secureTextEntry, setSecureTextEntry] = useState(true);
     const [formErrors, setFormErrors] = useState([]);
-    const [countries, setCountries] = useState([]);
     const [loading, setLoading] = useState(false);
 
     const [formData, setFormData] = useState({
-            email: null,
-            password: null,
-            password_confirmation: null,
-            name: '',
-            verification: 'register',
-        aviso_privacidad: 0,
-        publicidad: 0,
-        path_recibo: 0,
-        compartir_datos: 0
-
-        }
-    );
-
-
-    const accountRegister = () => {
-        setLoading(true);
-
-        api.postAwaiting($endpoints.auth.register, formData).then(response => {
-            console.log(response);
-            Toast.show({
-                type: 'success',
-                position: 'top',
-                text1: 'Cuenta creada',
-                text2: response.message,
-                visibilityTime: 3000,
-                onHide: () => {
-                    setLoading(false);
-                    setFormData({
-                            email: null,
-                            password: null,
-                            password_confirmation: null,
-                            name: '',
-                            verification: 'register',
-                            aviso_privacidad: 0,
-                            publicidad: 0,
-                            path_recibo: 0,
-                            compartir_datos: 0
-
-                        }
-                    );
-                    navigation.navigate('Login');
-                }
-            });
-
-        }).catch(error => {
-            console.log(error);
-            setLoading(false);
-            updateFormErrors(error.errors);
-        });
-    }
-
-    const updateFormErrors = (errors) => {
-        const newErrors = Object.keys(errors).reduce((acc, key) => {
-            acc[key] = errors[key][0];
-            return acc;
-        }, {});
-        setFormErrors(newErrors);
-    };
-
-
+        email: null,
+        name: '',
+        phone: '',
+        password: null,
+        mode: 'register',
+        password_confirmation: null,
+        ...params,
+    });
 
     const handleChangeForm = (name, value) => {
         setFormData(prevState => ({
@@ -105,125 +31,235 @@ export default function Signup() {
         }));
     };
 
-    useEffect(() => {
+    const accountRegister = () => {
+        setLoading(true);
+        httpClient.post($endpoints.auth.register, formData, false).then(response => {
+            navigation.navigate('VerificationCode',formData);
+        }).catch(error => {
+            console.log(error);
+            Alert.alert('Error', error.message, [{ text: 'Aceptar' }]);
+            setLoading(false);
+        }).finally(() => {
+            setLoading(false);
+        });
+    }
 
-    }, []);
+    const styles = StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.colors.background,
+        },
+        content: {
+            padding: 35,
+            gap: 20,
+        },
+        logo: {
+            alignSelf: 'center',
+            marginVertical: 32,
+            top: 20,
+        },
+        titleContainer: {
+            gap: 4,
+            marginBottom: 5,
+        },
+        form: {
+            gap: 15,
+        },
+        inputContainer: {
+            gap: 0,
+        },
+        loginButton: {
+            borderRadius: 4,
+            paddingVertical: 4,
+            elevation: 2,
+            marginTop: 15
+        }
+    });
 
     return (
-        <SafeAreaView style={[style.area, {backgroundColor: theme.bg,}]}>
+        <View style={styles.container}>
             <KeyboardAvoidingView style={{flex: 1}} behavior={Platform.OS === 'ios' ? 'padding' : null}>
-                <View style={[style.main, {backgroundColor: theme.bg, marginTop: 10}]}>
+                <View style={styles.content}>
+                    <View style={styles.logo}>
+                        <Image
+                            source={require('@assets/images/logos/logo.png')}
+                            style={{width: 300, height: 80}}
+                        />
+                    </View>
 
-                    <AppBar
-                        color={theme.bg}
-                        elevation={0}
-                        leading={<TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                            <Icon name="chevron-back" color={theme.txt} size={30}/>
-                        </TouchableOpacity>
-                        }/>
+                    <View style={styles.titleContainer}>
+                        <Text variant="headlineMedium" style={{fontWeight: '600'}}>Crear cuenta</Text>
+                        <Text variant="bodyLarge" style={{color: theme.colors.onSurfaceVariant}}>
+                            Registra tus datos para comenzar
+                        </Text>
+                    </View>
 
-                    <ScrollView showsVerticalScrollIndicator={false}>
+                    <SegmentedButtons
+                        value={value}
+                        onValueChange={setValue}
+                        style={{
+                        }}
+                        buttons={[
+                            {
+                                value: 'email',
+                                label: 'Email',
+                                icon: 'email',
+                                style: {
+                                    backgroundColor: value === 'email' ? '#E6E6FA' : 'transparent'
+                                }
+                            },
+                            {
+                                value: 'phone',
+                                label: 'Teléfono',
+                                icon: 'phone',
+                                style: {
+                                    backgroundColor: value === 'phone' ? '#E6E6FA' : 'transparent'
+                                }
+                            },
+                        ]}
+                        theme={{
+                            colors: {
+                                primary: '#084D6E',
+                                secondaryContainer: '#E6E6FA',
+                                onSecondaryContainer: '#084D6E'
+                            }
+                        }}
+                    />
 
-                        <Text style={[style.title, {color: theme.txt,}]}>Registrar cuenta</Text>
-                        <Text style={[style.m14, {color: Colors.disable,}]}>Regístrate para comenzar</Text>
-
-                        <Input icon="account" hasError={!!formErrors?.name}
-                               onTextChange={(value) => handleChangeForm('name', value)} value={formData?.name}
-                               label="Nombres"/>
-
-                        <Input icon="account" hasError={!!formErrors?.AP_paterno}
-                               onTextChange={(value) => handleChangeForm('AP_paterno', value)} value={formData?.AP_paterno}
-                               label="Apellido paterno"/>
-                        <Input icon="account" hasError={!!formErrors?.AP_materno}
-                               onTextChange={(value) => handleChangeForm('AP_materno', value)} value={formData?.AP_materno}
-                               label="Apellido materno"/>
-
-
-                        <Input icon="email" hasError={!!formErrors?.email}
-                               onTextChange={(value) => handleChangeForm('email', value)} keyboardType="email-address"
-                               value={formData?.email} label="Correo electrónico"/>
-
-                        <View style={[style.inputContainer, {
-                            borderColor: isFocused === 'Password' ? Colors.primary : theme.border,
-                            marginTop: 20
-                        }]}>
-                            <Icons name='key' size={25}
-                                   color={isFocused === 'Password' ? Colors.primary : Colors.disable}></Icons>
-                            <TextInput placeholder='Contraseña'
-                                       secureTextEntry={isPasswordVisible}
-                                       onFocus={() => setIsFocused('Password')}
-                                       onBlur={() => setIsFocused(false)}
-                                       value={formData.password}
-                                       onChangeText={(value) => handleChangeForm('password', value)}
-                                       selectionColor={Colors.primary}
-                                       placeholderTextColor={Colors.disable}
-                                       style={[style.r14, {paddingHorizontal: 10, color: theme.txt, flex: 1}]}
+                    <View style={styles.form}>
+                        <View style={styles.inputContainer}>
+                            <Text style={{fontWeight: 'bold', color: theme.colors.primary}}>
+                                Nombre(s)
+                            </Text>
+                            <TextInput
+                                mode="flat"
+                                value={formData.name}
+                                onChangeText={(value) => handleChangeForm('name', value)}
+                                placeholder="Ingresa tu nombre"
+                                underlineColor={theme.colors.outline}
+                                activeUnderlineColor={theme.colors.primary}
+                                style={{backgroundColor: 'transparent'}}
+                                error={!!formErrors?.name}
                             />
-                            <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-                                <Icon name={isPasswordVisible ? 'eye-off' : 'eye'}
-                                      color={isFocused === 'Password' ? Colors.primary : Colors.disable} size={20}/>
-                            </TouchableOpacity>
                         </View>
 
-                        <View style={[style.inputContainer, {
-                            borderColor: isFocused === 'Password' ? Colors.primary : theme.border,
-                            marginTop: 20
-                        }]}>
-                            <Icons name='key' size={25}
-                                   color={isFocused === 'Password' ? Colors.primary : Colors.disable}></Icons>
-                            <TextInput placeholder='Confirmar contraseña'
-                                       secureTextEntry={isPasswordVisible}
-                                       onFocus={() => setIsFocused('Password')}
-                                       onBlur={() => setIsFocused(false)}
-                                       value={formData.password_confirmation}
-                                       onChangeText={(value) => handleChangeForm('password_confirmation', value)}
-                                       selectionColor={Colors.primary}
-                                       placeholderTextColor={Colors.disable}
-                                       style={[style.r14, {paddingHorizontal: 10, color: theme.txt, flex: 1}]}
+                        {value === 'email' ? (
+                            <View style={styles.inputContainer}>
+                                <Text style={{fontWeight: 'bold', color: theme.colors.primary}}>
+                                    Correo electrónico
+                                </Text>
+                                <TextInput
+                                    mode="flat"
+                                    value={formData.email}
+                                    onChangeText={(value) => handleChangeForm('email', value)}
+                                    placeholder="example@email.com"
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
+                                    underlineColor={theme.colors.outline}
+                                    activeUnderlineColor={theme.colors.primary}
+                                    style={{backgroundColor: 'transparent'}}
+                                    error={!!formErrors?.email}
+                                />
+                            </View>
+                        ) : (
+                            <View style={styles.inputContainer}>
+                                <Text style={{fontWeight: 'bold', color: theme.colors.primary}}>
+                                    Número telefonico
+                                </Text>
+                                <TextInput
+                                    mode="flat"
+                                    value={formData.phone}
+                                    onChangeText={(value) => handleChangeForm('phone', value)}
+                                    placeholder="Ingresa tu número telefonico"
+                                    keyboardType="phone-pad"
+                                    autoCapitalize="none"
+                                    underlineColor={theme.colors.outline}
+                                    activeUnderlineColor={theme.colors.primary}
+                                    style={{backgroundColor: 'transparent'}}
+                                    error={!!formErrors?.phone}
+                                />
+                            </View>
+                        )}
+
+                        <View style={styles.inputContainer}>
+                            <Text style={{fontWeight: 'bold', color: theme.colors.primary}}>
+                                Contraseña
+                            </Text>
+                            <TextInput
+                                mode="flat"
+                                value={formData.password}
+                                placeholder="*************"
+                                onChangeText={(value) => handleChangeForm('password', value)}
+                                secureTextEntry={secureTextEntry}
+                                underlineColor={theme.colors.outline}
+                                activeUnderlineColor={theme.colors.primary}
+                                style={{backgroundColor: 'transparent'}}
+                                error={!!formErrors?.password}
+                                right={
+                                    <TextInput.Icon
+                                        icon={secureTextEntry ? 'eye-off' : 'eye'}
+                                        onPress={() => setSecureTextEntry(!secureTextEntry)}
+                                    />
+                                }
                             />
-                            <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-                                <Icon name={isPasswordVisible ? 'eye-off' : 'eye'}
-                                      color={isFocused === 'Password' ? Colors.primary : Colors.disable} size={20}/>
-                            </TouchableOpacity>
                         </View>
 
-                        <View style={{marginTop: 30}}>
-                            <TouchableOpacity disabled={loading} onPress={() => accountRegister()}
-                                              style={[style.btn, {
-                                                  flexDirection: 'row',
-                                                  alignItems: 'center',
-                                                  justifyContent: 'center'
-                                              }]}>
-                                {loading && <ActivityIndicator size="small" color="white" style={{marginRight: 5}}/>}
-                                <Text style={style.btntxt}> Registrar</Text>
-                            </TouchableOpacity>
+                        <View style={styles.inputContainer}>
+                            <Text style={{fontWeight: 'bold', color: theme.colors.primary}}>
+                                Confirmar contraseña
+                            </Text>
+                            <TextInput
+                                mode="flat"
+                                value={formData.password_confirmation}
+                                placeholder="*************"
+                                onChangeText={(value) => handleChangeForm('password_confirmation', value)}
+                                secureTextEntry={secureTextEntry}
+                                underlineColor={theme.colors.outline}
+                                activeUnderlineColor={theme.colors.primary}
+                                style={{backgroundColor: 'transparent'}}
+                                error={!!formErrors?.password_confirmation}
+                                right={
+                                    <TextInput.Icon
+                                        icon={secureTextEntry ? 'eye-off' : 'eye'}
+                                        onPress={() => setSecureTextEntry(!secureTextEntry)}
+                                    />
+                                }
+                            />
                         </View>
+
+                        <Button
+                            mode="contained"
+                            onPress={accountRegister}
+                            loading={loading}
+                            style={styles.loginButton}
+                        >
+                            Registrar
+                        </Button>
 
                         <View style={{
                             flexDirection: 'row',
+                            justifyContent: 'center',
                             alignItems: 'center',
-                            justifyContent: 'space-between',
-                            paddingHorizontal: 20,
-                            marginVertical: 40
+                            marginTop: 20
                         }}>
-                            <View style={[style.divider, {flex: 1, backgroundColor: theme.border}]}></View>
-                            <Text style={[style.m14, {color: Colors.disable, marginHorizontal: 10,}]}>o</Text>
-                            <View style={[style.divider, {flex: 1, backgroundColor: theme.border}]}></View>
-                        </View>
-
-
-                        <View
-                            style={{flexDirection: 'row', justifyContent: 'center', paddingTop: 40, marginBottom: 10}}>
-                            <Text style={[style.m14, {color: Colors.disable}]}>¿Ya tienes una cuenta?</Text>
+                            <Text
+                                variant="bodyLarge"
+                                style={{color: theme.colors.onSurfaceVariant}}
+                            >
+                                ¿Ya tienes cuenta?
+                            </Text>
                             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                                <Text style={[style.b14, {color: Colors.primary,fontWeight: 'bold',textDecorationLine: 'underline'}]}> Inicia sesión</Text>
+                                <Text variant="bodyLarge"
+                                      style={{color: theme.colors.primary, fontWeight: 'bold', marginLeft: 5}}>
+                                    Inicia sesión
+                                </Text>
                             </TouchableOpacity>
                         </View>
-
-
-                    </ScrollView>
+                    </View>
                 </View>
             </KeyboardAvoidingView>
-        </SafeAreaView>
-    )
-}
+        </View>
+    );
+};
+
+export default Signup;
